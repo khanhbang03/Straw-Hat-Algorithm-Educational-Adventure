@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Straw Hat Algorithm — Educational Adventure</title>
+  <style>
+    :root{--bg:#0b3d91;--sea:#0f62a2;--card:#ffffffcc;--muted:#334155}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#07203c}
+    body{background:linear-gradient(180deg,#a8dadc 0%, #f1faee 30%, #a8d0e6 100%);display:flex;align-items:center;justify-content:center;padding:24px}
+    .stage{width:980px;background:linear-gradient(180deg,#f8fafc, #f0f7fb);border-radius:14px;box-shadow:0 18px 40px rgba(2,6,23,0.12);overflow:hidden}
+
+    /* Header */
+    header{padding:18px 24px;background:linear-gradient(90deg,#ffafcc,#ffd6a5);display:flex;align-items:center;gap:16px}
+    header h1{margin:0;font-size:20px}
+    header p{margin:0;color:#2b2b2b;opacity:0.9}
+
+    /* Scene */
+    .scene{display:flex;gap:18px;padding:20px}
+    .ocean{flex:1;position:relative;border-radius:10px;padding:18px;min-height:360px;background:linear-gradient(180deg,#80c8ff,#2b9cff)}
+    .deck{position:absolute;left:18px;right:18px;bottom:18px;height:72px;border-radius:10px;background:linear-gradient(180deg,#fefefeaa,#ffffff55);box-shadow:0 8px 20px rgba(3,10,20,0.12);display:flex;align-items:center;gap:12px;padding:12px}
+
+    /* character cards */
+    .crew{display:flex;gap:12px}
+    .char{width:110px;background:var(--card);border-radius:10px;padding:10px;box-shadow:0 6px 18px rgba(3,10,20,0.08);text-align:center}
+    .avatar{font-size:36px}
+    .name{font-weight:700;margin-top:6px}
+    .power{margin-top:6px;color:var(--muted)}
+
+    /* Right panel */
+    .panel{width:360px;padding:12px 18px}
+    .card{background:white;border-radius:10px;padding:14px;box-shadow:0 8px 24px rgba(2,6,23,0.06);}
+    .stat{display:flex;justify-content:space-between;padding:8px 4px}
+    .narration{margin-top:12px;min-height:84px;padding:10px;border-radius:8px;background:#f6fbff;border:1px solid #e4f0ff}
+
+    .controls{display:flex;align-items:center;gap:8px;margin-top:12px}
+    .btn{padding:8px 12px;border-radius:8px;border:none;background:#0b6db8;color:white;cursor:pointer}
+    .btn.secondary{background:#1f6f4f}
+    .speed{display:flex;gap:6px;align-items:center}
+    .legend{margin-top:12px;font-size:13px;color:#374151}
+
+    /* highlights for array numbers shown on a ribbon */
+    .ribbon{position:absolute;left:18px;right:18px;top:18px;display:flex;gap:10px;justify-content:center}
+    .pill{padding:8px 10px;border-radius:8px;background:#ffffffcc;min-width:48px;text-align:center;font-weight:700}
+    .inc{background:linear-gradient(90deg,#72f0b6,#38c172);color:#032a18}
+    .dec{background:linear-gradient(90deg,#ffb4b4,#ff6b6b);color:#3b0210}
+    .curr{outline:4px solid rgba(255,255,255,0.25)}
+
+    footer{padding:12px 18px;background:linear-gradient(90deg,#f8fafc,#eef6ff);display:flex;justify-content:space-between;align-items:center}
+
+    /* responsive small */
+    @media (max-width:1000px){.stage{width:94vw}.panel{display:none}.ocean{min-height:420px}}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <header>
+      <div style="display:flex;flex-direction:column">
+        <h1>Straw Hat Algorithm — "The Increasing Voyage"</h1>
+        <p>Educational story-mode visualization of <code>hasIncreasingSubarrays()</code> — narrated by the Straw Hat crew.</p>
+      </div>
+      <div style="margin-left:auto;font-size:13px;color:#243b55">Example array: <strong id="arrLabel">[1,2,3,1,2,3,4]</strong></div>
+    </header>
+
+    <div class="scene">
+      <div class="ocean">
+        <div class="ribbon" id="ribbon"></div>
+
+        <!-- floating ship deck -->
+        <div class="deck">
+          <div class="crew">
+            <div class="char" id="char-nami"><div class="avatar">🧭</div><div class="name">Nami</div><div class="power">Navigator (inc)</div></div>
+            <div class="char" id="char-luffy"><div class="avatar">🧩</div><div class="name">Luffy</div><div class="power">Captain (prevInc)</div></div>
+            <div class="char" id="char-zoro"><div class="avatar">⚔️</div><div class="name">Zoro</div><div class="power">Swords (maxLen)</div></div>
+            <div class="char" id="char-sunny"><div class="avatar">⛵</div><div class="name">Sunny</div><div class="power">Ship</div></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <div class="card">
+          <div style="font-weight:800">Algorithm Stats</div>
+          <div class="stat"><div>Step</div><div id="step">0</div></div>
+          <div class="stat"><div>Nami's streak (inc)</div><div id="inc">1</div></div>
+          <div class="stat"><div>Luffy's last streak (prevInc)</div><div id="prevInc">0</div></div>
+          <div class="stat"><div>Zoro's best (maxLen)</div><div id="maxLen">0</div></div>
+
+          <div class="narration" id="narration">Welcome aboard! The Straw Hats will travel across numbers — each increasing step is a power surge. Press Play to begin the voyage and see how they detect a strong combined surge (≥ k).</div>
+
+          <div class="controls">
+            <button class="btn" id="play">Play ▶</button>
+            <button class="btn secondary" id="pause">Pause ⏸</button>
+            <div class="speed">Speed: <input id="speed" type="range" min="400" max="2000" step="200" value="900" /></div>
+          </div>
+
+          <div class="legend">Mapping: <strong>Nami</strong>=current increasing run, <strong>Luffy</strong>=previous run, <strong>Zoro</strong>=combined strength. k = <span id="kVal">3</span></div>
+        </div>
+
+        <div style="height:12px"></div>
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:8px">Controls & Explanation</div>
+          <ol style="margin:0;padding-left:18px">
+            <li>Auto-play runs through comparisons left→right.</li>
+            <li>When numbers rise, Nami (inc) grows; otherwise Nami resets and Luffy takes her previous size.</li>
+            <li>Zoro watches for the best combined sign of strength; when Zoro ≥ k, the crew cheers — algorithm returns <code>True</code>.</li>
+          </ol>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      <div style="font-size:13px;color:#2b2b2b">Educational Adventure • Story Mode • Autoplay</div>
+      <div style="font-size:13px;color:#2b2b2b">Tip: adjust speed or pause to read the narration</div>
+    </footer>
+  </div>
+
+  <script>
+    // Core data
+    const nums = [1,2,3,1,2,3,4];
+    const k = 3;
+    document.getElementById('kVal').textContent = k;
+    document.getElementById('arrLabel').textContent = JSON.stringify(nums);
+
+    // DOM refs
+    const ribbon = document.getElementById('ribbon');
+    const incEl = document.getElementById('inc');
+    const prevIncEl = document.getElementById('prevInc');
+    const maxLenEl = document.getElementById('maxLen');
+    const stepEl = document.getElementById('step');
+    const narration = document.getElementById('narration');
+    const playBtn = document.getElementById('play');
+    const pauseBtn = document.getElementById('pause');
+    const speedRange = document.getElementById('speed');
+
+    // build ribbon of pills
+    function renderRibbon(i, inc, prevInc){
+      ribbon.innerHTML = '';
+      nums.forEach((n, idx) => {
+        const p = document.createElement('div');
+        p.className = 'pill';
+        p.textContent = n;
+        if (idx === i) p.classList.add('curr');
+        // highlight increasing/decreasing relative to previous
+        if (idx > 0){
+          if (nums[idx] > nums[idx-1]) p.classList.add('inc');
+          else p.classList.add('dec');
+        }
+        ribbon.appendChild(p);
+      });
+    }
+
+    // story-style narration helper
+    function tell(text){
+      narration.innerHTML = text;
+    }
+
+    // initial state
+    let inc = 1, prevInc = 0, maxLen = 0;
+    let i = 1; // index being compared
+    let playing = false;
+    let timer = null;
+
+    function updateUI(){
+      incEl.textContent = inc;
+      prevIncEl.textContent = prevInc;
+      maxLenEl.textContent = maxLen;
+      stepEl.textContent = Math.min(i, nums.length-1);
+      renderRibbon(Math.min(i, nums.length-1), inc, prevInc);
+    }
+
+    // describe in story-mode with fun + epic flavor
+    function narrateComparison(idx, curr, prev, action){
+      // combine funny and epic lines
+      const seed = Math.abs((idx*97 + curr*13 + prev*5)) % 5;
+      const epic = [
+        `A storm of haki! ${curr} surges past ${prev}. Nami's map lights up — her streak grows!`,
+        `The sea calms, and Nami smiles — "We keep going!"`,
+        `Luffy cheers wildly as the crew senses a power climb.`,
+        `Zoro narrows his eyes; he senses combined strength forming nearby.`,
+        `The Thousand Sunny hums as the crew readies for a big moment.`
+      ];
+      const funny = [
+        `Usopp tries to measure the surge but gets distracted by a clam.`,
+        `Sanji offers a celebratory snack — "For strength!"`,
+        `Chopper claps like he's on a rollercoaster.`,
+        `Franky shouts: SUPER! while punching the air.`,
+        `Robin quietly observes and whispers: "Interesting pattern."`
+      ];
+
+      const line = `${epic[seed]} ${funny[(seed+2)%5]}`;
+      if (action === 'inc') return `${line} → Nami (inc) increases to ${inc}.`;
+      if (action === 'reset') return `${line} → The wave breaks; Luffy (prevInc) records ${prevInc}, Nami resets.`;
+      if (action === 'done') return `A roar from the crew! Zoro's best (${maxLen}) ≥ k (${k}). The algorithm returns TRUE — they've found a legendary surge!`;
+      return line;
+    }
+
+    function step(){
+      if (i >= nums.length) {
+        tell(maxLen >= k ? `Voyage complete — result: TRUE (Zoro's ${maxLen} ≥ ${k})` : `Voyage complete — result: FALSE (Zoro's ${maxLen} < ${k})`);
+        playing = false; clearInterval(timer); timer = null; return;
+      }
+
+      const curr = nums[i];
+      const prev = nums[i-1];
+
+      if (curr > prev){
+        inc += 1;
+        tell(narrateComparison(i, curr, prev, 'inc'));
+      } else {
+        prevInc = inc;
+        inc = 1;
+        tell(narrateComparison(i, curr, prev, 'reset'));
+      }
+
+      // algorithm's computation for maxLen (as in original code)
+      maxLen = Math.max(maxLen, Math.max(inc >> 1, Math.min(prevInc, inc)));
+      updateUI();
+
+      if (maxLen >= k){
+        tell(narrateComparison(i, curr, prev, 'done'));
+        playing = false; clearInterval(timer); timer = null; return;
+      }
+
+      i += 1;
+    }
+
+    function play(){
+      if (playing) return;
+      playing = true;
+      const speed = parseInt(speedRange.value, 10);
+      timer = setInterval(step, speed);
+    }
+    function pause(){playing=false; if(timer){clearInterval(timer); timer=null}}
+
+    // controls
+    playBtn.addEventListener('click', play);
+    pauseBtn.addEventListener('click', pause);
+    speedRange.addEventListener('input', ()=>{
+      if (playing){clearInterval(timer); timer=null; playing=false; play();}
+    });
+
+    // start auto-play immediately but allow pause
+    updateUI();
+    // small delay then start for dramatic effect
+    setTimeout(()=>{play();}, 800);
+  </script>
+</body>
+</html>
